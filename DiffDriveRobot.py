@@ -93,10 +93,11 @@ class Robot(object):
         R = A*R
         self.OweelG.setSpeed(np.array(R)[0][0])
         self.OweelD.setSpeed(np.array(R)[1][0])
-
-        self.theta = self.theta + self.Omega
-        self.x = self.x + self.V*np.cos(self.theta)
-        self.y = self.y + self.V*np.sin(self.theta)
+        self.theta = self.theta + self.Omega *dT
+        if(self.theta <= np.pi): self.theta = self.theta + 2*np.pi
+        if(self.theta > np.pi): self.theta = self.theta - 2*np.pi
+        self.x = self.x + self.V*dT*np.cos(self.theta)
+        self.y = self.y + self.V*dT*np.sin(self.theta)
 
     def draw(self):
         shape2 = np.transpose(Transform.rotate(self.polygon, self.theta))

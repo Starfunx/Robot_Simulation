@@ -9,10 +9,10 @@ terrain_polygons =  [
 
 terrain = Terrain(terrain_polygons)
 robot = Robot(1000, 1000, 0)
-dT = 0.002
+dT = 0.001
 
-robot.setLeftMotorSpeed(0*dT) #input speed*dT
-robot.setRightMotorSpeed(1000*dT)
+robot.setLeftMotorSpeed(1000) #input mm.s-1
+robot.setRightMotorSpeed(1000)
 
 for t in range(500):
 
