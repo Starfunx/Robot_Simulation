@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 import Transform as Transform
 
-
 class Wheel:
     """docstring for Wheel."""
 
@@ -59,11 +58,11 @@ class Robot(object):
         self.MweelD.setSpeed(speed)
 
   #asscenseurs
-    def getLeftEncoderDist(self):
-        return self.OweelG.getSpeed()
+    def getLeftEncoderDist(self, dT):
+        return self.OweelG.getDist(dT)
 
-    def getRightEncoderDist(self):
-        return self.OweelD.getSpeed()
+    def getRightEncoderDist(self, dT):
+        return self.OweelD.getDist(dT)
 
     def getX(self):
         return self.x
