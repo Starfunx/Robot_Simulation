@@ -117,4 +117,4 @@ class Robot(object):
         self.setConsign()
 
 if __name__== "__main__":
-    import main.py
+    import main

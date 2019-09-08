@@ -9,7 +9,10 @@ class Terrain:
         self.terrain = terrain_polygons
 
     def draw(self):
-        for polygon in self.terrain:
-            lines = np.transpose(polygon)
-            plt.plot(lines[0], lines[1])
-            pass
+        for linePts in self.terrain:
+            line = np.transpose(linePts)
+            plt.plot(line[0], line[1], 'b')
+
+
+if __name__== "__main__":
+    import main

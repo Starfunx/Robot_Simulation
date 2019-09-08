@@ -110,4 +110,4 @@ class Robot(object):
 
 
 if __name__== "__main__":
-    import main.py
+    import main
