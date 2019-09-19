@@ -1,10 +1,11 @@
+# coding: utf-8
 import numpy as np
 import matplotlib.pyplot as plt
 
 import Transform as Transform
 import DiffDriveRobot
 
-class Wheel:
+class Wheel(object):
     """docstring for Wheel."""
 
     def __init__(self):

@@ -1,9 +1,9 @@
+# coding: utf-8
 import numpy as np
 import matplotlib.pyplot as plt
 from Terrain import Terrain as Terrain
 from DiffDriveRobot import Robot as Robot
 from DiffDriveControl import Robot as RobotControl
-# from RayCaster import Lidar
 from Lidar import Lidar
 
 
@@ -27,33 +27,28 @@ terrain_lines =  np.array([[[0,       0], [0,    2000]],
                           [[3000,    0], [0,       0]],
                           [[1900, 1000], [2200, 1900]]])
 
+
 terrain = Terrain(terrain_lines)
 robot = Robot(1000, 1000, 0)
-robotControl = RobotControl(1000, 1000, 0, robot)
+robotControl = RobotControl(robot.getX(), robot.getY(), robot.getTheta(), robot)
 lidar = Lidar([robot.getX(), robot.getY()], 0, 50, np.pi/30, terrain_lines)
-
-
+pickConsign = PickConsign(robotControl)
 
 dT = 0.001
-
-robot.setX(1000)
-robot.setY(1000)
-robot.setTheta(0)
-
-pickConsign = PickConsign(robotControl)
 
 for t in range(90000):
 
   #computing
     robot.update(dT)
     robotControl.update(dT)
-    lidar.setX(robot.getX())
-    lidar.setY(robot.getY())
-    lidar.setTheta(robot.getTheta())
-    if (t*dT)%(1/30) < 0.001:
+
+    if (t*dT)%(1.0/30.0) < 0.001:
+        lidar.setX(robot.getX())
+        lidar.setY(robot.getY())
+        lidar.setTheta(robot.getTheta())
         lidar.fire()
 
-    if (t*dT)%(1/30) < 0.001:
+    if (t*dT)%(1.0/30.0) < 0.001:
       # Drawing
         plt.clf()
         plt.axis('equal')

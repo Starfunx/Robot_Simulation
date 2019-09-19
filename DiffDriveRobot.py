@@ -1,9 +1,10 @@
+# coding: utf-8
 import numpy as np
 import matplotlib.pyplot as plt
 
 import Transform as Transform
 
-class Wheel:
+class Wheel(object):
     """docstring for Wheel."""
 
     def __init__(self):
@@ -86,7 +87,9 @@ class Robot(object):
         VMg = self.MweelG.getSpeed()
         VMd = self.MweelD.getSpeed()
         VM = np.matrix([VMg, VMd], dtype = float)
+        print(VM)
         R = B*np.transpose(VM)
+        print(R)
         self.V = np.array(R)[0][0]
         self.Omega = np.array(R)[1][0]
         R = A*R
@@ -97,6 +100,10 @@ class Robot(object):
         if(self.theta > np.pi): self.theta = self.theta - 2*np.pi
         self.x = self.x + self.V*dT*np.cos(self.theta)
         self.y = self.y + self.V*dT*np.sin(self.theta)
+        # print(self.x)
+        # print(self.y)
+        # print(self.theta)
+        print("\n")
 
     def draw(self):
         shape2 = np.transpose(Transform.rotate(self.polygon, self.theta))
