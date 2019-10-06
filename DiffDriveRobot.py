@@ -80,16 +80,14 @@ class Robot(object):
         #hypothèse de non glissement des roues odométriques
         EO = self.OEntreAxes
         EM = self.MEntreAxes
-        A = np.matrix([ [    1, -EO/2],
-                        [    1, +EO/2]], dtype = float) # [VOg, VOd]t <= A*[V, Omega]t
-        B = np.matrix([ [  1/2,   1/2],
-                        [-1/EM, +1/EM]], dtype = float) # [V, Omega]t <= A*[VMg, VMd]t
+        A = np.matrix([ [ 1.0, -EO/2.0],
+                        [ 1.0, +EO/2.0]], dtype = float) # [VOg, VOd]t <= A*[V, Omega]t
+        B = np.matrix([ [ 1.0/2.0,  1.0/2.0],
+                        [ -1.0/EM, +1.0/EM]], dtype = float) # [V, Omega]t <= A*[VMg, VMd]t
         VMg = self.MweelG.getSpeed()
         VMd = self.MweelD.getSpeed()
         VM = np.matrix([VMg, VMd], dtype = float)
-        print(VM)
-        R = B*np.transpose(VM)
-        print(R)
+        R = np.dot(B,np.transpose(VM))
         self.V = np.array(R)[0][0]
         self.Omega = np.array(R)[1][0]
         R = A*R
@@ -100,10 +98,6 @@ class Robot(object):
         if(self.theta > np.pi): self.theta = self.theta - 2*np.pi
         self.x = self.x + self.V*dT*np.cos(self.theta)
         self.y = self.y + self.V*dT*np.sin(self.theta)
-        # print(self.x)
-        # print(self.y)
-        # print(self.theta)
-        print("\n")
 
     def draw(self):
         shape2 = np.transpose(Transform.rotate(self.polygon, self.theta))
@@ -113,7 +107,6 @@ class Robot(object):
 
     def update(self, dT):
         self.updateRobotData(dT)
-
 
 
 if __name__== "__main__":
