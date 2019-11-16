@@ -46,6 +46,9 @@ class Robot(object):
         self.DistErr = 0
         self.CapErr = 0
 
+        self.alpha = []
+        self.thetaa = []
+        self.DistErra = []
   # mutateurs
     def setX(self, x):
         self.x = x
@@ -78,30 +81,45 @@ class Robot(object):
   #autres methodes
     #fonctions traduisant le fonctionment du robot (modèle)
     def updateOdometry(self, dT):
-        dOG = self.robot.getLeftEncoderDist(dT)
+        dOL = self.robot.getLeftEncoderDist(dT)
         dOR = self.robot.getRightEncoderDist(dT)
 
-        dTheta = (dOR - dOG)/self.OEntreAxes
-        dXrobot = (dOR + dOG)/2
+        dXrobot = (dOR + dOL)/2
+        dTheta = (dOR - dOL)/self.OEntreAxes
 
         self.theta = self.theta + dTheta
+        if(self.theta <= -np.pi): self.theta = self.theta + 2*np.pi
+        if(self.theta > np.pi): self.theta = self.theta - 2*np.pi
+
         self.x = self.x + dXrobot*np.cos(self.theta)
         self.y = self.y + dXrobot*np.sin(self.theta)
 
-    def computeError(self):
+    def computeError(self): # Equations 11 & 12
         self.XErr = self.xC - self.x
         self.YErr = self.yC - self.y
-        self.ThetaErr = self.thetaC - self.theta
+        self.ThetaErr = self.thetaC - self.theta #unused
 
-        self.DistErr = np.sqrt(np.square(self.XErr)+np.square(self.YErr))
-        self.CapErr = np.arctan2(self.YErr, self.XErr)-self.theta
+        Kp = 3/2
+        Kalpha =10/2
+        alpha = np.arctan2(self.YErr, self.XErr)-self.theta
+        if alpha <= -np.pi: alpha+= 2*np.pi
+        if alpha > +np.pi: alpha-= 2*np.pi
 
-        if(self.CapErr <= np.pi): self.CapErr = self.CapErr + 2*np.pi
-        if(self.CapErr > np.pi): self.CapErr = self.CapErr - 2*np.pi
+
+        self.thetaa.append(self.theta)
+        self.alpha.append(alpha)
+        self.DistErr = Kp*np.sqrt(self.XErr**2 + self.YErr**2)*np.cos(alpha)
+        self.CapErr =Kp*np.sin(alpha)*np.cos(alpha) + Kalpha*alpha
+
+        self.DistErra.append(self.DistErr)
 
     def setConsign(self):
-        VMG = self.DistErr*1 - self.CapErr*800
-        VMD = self.DistErr*1 + self.CapErr*800
+        V = self.DistErr
+        Omega = self.CapErr
+        VMG = (V - Omega * self.MEntreAxes/2)/1 #1 = wheelRadius
+        VMD = (V + Omega * self.MEntreAxes/2)/1
+        # VMG = self.DistErr*1 - self.CapErr*800
+        # VMD = self.DistErr*1 + self.CapErr*800
         self.robot.setLeftMotorSpeed(VMG)
         self.robot.setRightMotorSpeed(VMD)
 

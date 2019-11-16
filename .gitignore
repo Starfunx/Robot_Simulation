@@ -4,3 +4,5 @@ DiffDriveRobot.pyc
 Lidar.pyc
 Terrain.pyc
 Transform.pyc
+main.pyc
+__pycache__/
