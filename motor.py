@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import numpy as np
 import math
 
@@ -43,22 +45,26 @@ class Motor(object):
 
         E = Kv * Omega
 
+
         i = i + (V-E-R*i)/L * dT
         torque = i*Kt
-        Omega = Omega + (torque - Omega*B - load_T)/(J + load_J)*dT
+        # Omega = Omega + (torque - Omega*B - load_T)/(J + load_J)*dT
 
         self.current = i
         self.Torque = torque
-        self.angularSpeed = Omega
+        # self.angularSpeed = Omega
 
     # mutateurs
+    def setAngularVelocity(self, angularVelocity):
+        self.angularSpeed = angularVelocity
+
     def setVoltage(self, V):
         self.voltage = V
 
     def setLoad(self, load_T):
         self.load_T = load_T
 
-    def setLoad(self, load_J):
+    def setLoadInertia(self, load_J):
         self.load_J = load_J
 
     # asscenseurs
@@ -78,25 +84,38 @@ class Motor(object):
 def main():
     import matplotlib.pyplot as plt
 
-    Km = 12/(8060 * 2*np.pi/60.)
-    Kb = 12/(8060 * 2*np.pi/60.)
-
-    La = 1e-3
-    Ra = 2.5
-
-    J  = 1e-6
-    c  = 1e-7
-
-    load_J = 0.000
-
-    motor = Motor(Km, La, Ra, J, c, Kb)
-
-    motor.setLoad(load_J)
-
     dT = 0.0001
     time = np.arange(0,2,dT)
-    Voltage = np.heaviside(time-0.5,1)*12
+
+    # Km = 12/(8060 * 2*np.pi/60.)
+    # Kb = 12/(8060 * 2*np.pi/60.)
+    #
+    # La = 1e-3
+    # Ra = 2.5
+    #
+    # J  = 1e-6
+    # c  = 1e-7
+    #
+    # load_J = 0.000
+    # load_torque = np.heaviside(time-0.5,1)*0
+
+    Km = 12/(260 * 2*np.pi/60.)
+    Kb = 12/(260 * 2*np.pi/60.)
+
+    La = 8e-3
+    Ra = 14.2
+
+    J  = 1.5e-3
+    c  = 5e-3
+
+    load_J = 0.000
     load_torque = np.heaviside(time-0.5,1)*0
+
+    motor = Motor(Km, La, Ra, J, c, Kb)
+    motor.setLoad(load_J)
+
+
+    Voltage = np.heaviside(time-0.5,1)*12
 
     Current = []
     Speed = []
