@@ -99,17 +99,17 @@ class Robot(object):
         self.YErr = self.yC - self.y
         self.ThetaErr = self.thetaC - self.theta #unused
 
-        Kp = 3/2
-        Kalpha =10/2
+        Kp = 1
+        Kalpha = 5
         alpha = np.arctan2(self.YErr, self.XErr)-self.theta
         if alpha <= -np.pi: alpha+= 2*np.pi
         if alpha > +np.pi: alpha-= 2*np.pi
 
-
         self.thetaa.append(self.theta)
         self.alpha.append(alpha)
         self.DistErr = Kp*np.sqrt(self.XErr**2 + self.YErr**2)*np.cos(alpha)
-        self.CapErr =Kp*np.sin(alpha)*np.cos(alpha) + Kalpha*alpha
+        # self.CapErr = Kp*np.sin(alpha)*np.cos(alpha) + Kalpha*alpha
+        self.CapErr = Kalpha*np.sin(alpha)*np.cos(alpha)
 
         self.DistErra.append(self.DistErr)
 
@@ -118,8 +118,7 @@ class Robot(object):
         Omega = self.CapErr
         VMG = (V - Omega * self.MEntreAxes/2)/1 #1 = wheelRadius
         VMD = (V + Omega * self.MEntreAxes/2)/1
-        # VMG = self.DistErr*1 - self.CapErr*800
-        # VMD = self.DistErr*1 + self.CapErr*800
+
         self.robot.setLeftMotorSpeed(VMG)
         self.robot.setRightMotorSpeed(VMD)
 

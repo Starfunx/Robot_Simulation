@@ -48,8 +48,8 @@ class Motor(object):
 
         i = i + (V-E-R*i)/L * dT
         torque = i*Kt
-        # Omega = Omega + (torque - Omega*B - load_T)/(J + load_J)*dT
 
+        Omega = Omega + (torque - Omega*B - load_T)/(J + load_J)*dT
         self.current = i
         self.Torque = torque
         # self.angularSpeed = Omega
@@ -87,17 +87,17 @@ def main():
     dT = 0.0001
     time = np.arange(0,2,dT)
 
-    # Km = 12/(8060 * 2*np.pi/60.)
-    # Kb = 12/(8060 * 2*np.pi/60.)
-    #
-    # La = 1e-3
-    # Ra = 2.5
-    #
-    # J  = 1e-6
-    # c  = 1e-7
-    #
-    # load_J = 0.000
-    # load_torque = np.heaviside(time-0.5,1)*0
+    Km = 12/(8060 * 2*np.pi/60.)
+    Kb = 12/(8060 * 2*np.pi/60.)
+
+    La = 1e-3
+    Ra = 2.5
+
+    J  = 1e-6
+    c  = 1e-7
+
+    load_J = 0.000
+    load_torque = np.heaviside(time-0.5,1)*0
 
     Km = 12/(260 * 2*np.pi/60.)
     Kb = 12/(260 * 2*np.pi/60.)

@@ -51,12 +51,12 @@ for t in range(Tmax):
     robot.update(dT)
     robotControl.update(dT)
 
-    # if t*dT > trajectory_t[i]:
-    #     i+=1
-    #     if i>=len(trajectory_t):
-    #         i-=1
-    #     robotControl.setXC(trajectory[0,i])
-    #     robotControl.setYC(trajectory[1,i])
+    if t*dT > trajectory_t[i]:
+        i+=1
+        if i>=len(trajectory_t):
+            i-=1
+        robotControl.setXC(trajectory[0,i])
+        robotControl.setYC(trajectory[1,i])
 
     if (t*dT)%(1.0/30.0) < 0.001:
         lidar.setX(robot.getX())

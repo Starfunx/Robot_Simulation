@@ -2,7 +2,8 @@
 
 import numpy as np
 from Motor import Motor as Motor
-
+import Transform
+import matplotlib.pyplot as plt
 
 class Robot(object):
     """docstring for Robot.
@@ -16,6 +17,8 @@ class Robot(object):
         super(Robot, self).__init__()
         self.motorR = motorR
         self.motorL = motorL
+
+        self.polygon = np.array([[-150, -150], [-150, 150], [150, 150], [150, -150], [-150, -150]],dtype =float)
 
         self.r = r
         self.l = l
@@ -51,8 +54,6 @@ class Robot(object):
 
         self.torqueR = self.motorR.getTorque()
         self.torqueL = self.motorL.getTorque()
-
-
 
         F = (self.torqueR + self.torqueL)/self.r
         M = (self.torqueR - self.torqueL)*self.l/self.r
@@ -113,6 +114,12 @@ class Robot(object):
         self.motorR.setVoltage(VR)
         self.motorL.setVoltage(VL)
 
+    def draw(self):
+        shape2 = np.transpose(Transform.rotate(self.polygon, self.theta))
+        shape2 = np.transpose(Transform.translate(np.transpose(shape2), self.x*1000, self.y*1000))
+        plt.plot( shape2[0], shape2[1])
+
+
 
 def main():
     import matplotlib.pyplot as plt
@@ -123,23 +130,23 @@ def main():
     VoltageL = np.heaviside(time-0.5,1)*12
 
     # motors
-    Km = 12/(260 * 2*np.pi/60.)
-    Kb = 12/(260 * 2*np.pi/60.)
+    Km = 12./(260 * 2*np.pi/60.)
+    Kb = 12./(260 * 2*np.pi/60.)
 
-    La = 8e-3
+    La = 8.e-3
     Ra = 14.2
 
     J  = 1.5e-3
-    c  = 5e-3
+    c  = 5.e-3
 
     motorR = Motor(Km, La, Ra, J, c, Kb)
     motorL = Motor(Km, La, Ra, J, c, Kb)
 
     #frame
-    r = 0.1
-    l = 1
-    m = 100
-    I = 1
+    r = 100.
+    l = 100.
+    m = 100.
+    I = 100.
     robot = Robot(r, l, m, I, motorR, motorL)
 
     X = []
@@ -159,7 +166,7 @@ def main():
     fig, ax1 = plt.subplots()
     ax1.set_xlabel('x')
     ax1.set_ylabel('y')
-    ax1.plot(X, Y, 'k')
+    ax1.plot(X, Y, 'k+')
 
     fig, ax2 = plt.subplots()
     ax2.set_xlabel('time (s)')
