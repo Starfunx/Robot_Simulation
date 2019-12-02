@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 
 class Robot(object):
     """docstring for Robot.
-    r : wheel radius
-    l : distance betweed two motors wheels
-    m : robot mass
-    I : robot z inertia
+    r : wheel radius in mm
+    l : distance betweed two motors wheels in mm
+    m : robot mass in Kg
+    I : robot z inertia in Kg.m^2
     """
 
     def __init__(self, r, l, m, I, motorR, motorL):
@@ -77,6 +77,10 @@ class Robot(object):
         self.thetaR = self.thetaR + self.omegaR * dT
         self.thetaL = self.thetaL + self.omegaL * dT
 
+    def getDistBetweenWheels():
+        return self.l
+    def getWheelRadius():
+        return self.r
 
     def setMotorTorques(self, torqueR, torqueL):
         self.torqueR = torqueR
@@ -108,8 +112,6 @@ class Robot(object):
     def getWheelsAngularPos(self):
         return [self.thetaR, self.thetaL]
 
-
-
     def setMotorVoltages(self, VR, VL):
         self.motorR.setVoltage(VR)
         self.motorL.setVoltage(VL)
@@ -120,8 +122,7 @@ class Robot(object):
         plt.plot( shape2[0], shape2[1])
 
 
-
-def main():
+if __name__== "__main__":
     import matplotlib.pyplot as plt
     dT = 0.001
     time = np.arange(0,10,dT)
@@ -176,6 +177,3 @@ def main():
     ax2.plot(time, Y, 'g')
 
     plt.show()
-
-if __name__== "__main__":
-    main()

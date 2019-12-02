@@ -3,28 +3,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import Transform as Transform
-from Robot import Robot as Robot
-from Motor import Motor as Motor
+from DynamicDiffDriveRobotModel import DiffDriveRobot as Robot
 
 class RobotControl(object):
     """docstring for RobotControl."""
 
-    def __init__(self, x, y, theta, robot):
+    def __init__(self, robot):
         super(RobotControl, self).__init__()
-        self.polygon = np.array([[-150, -150], [-150, 150], [150, 150], [150, -150], [-150, -150]],dtype =float)
 
-        self.x = x
-        self.y = y
-        self.theta = theta
+        self.x = 0.
+        self.y = 0.
+        self.theta = 0.
         self.robot = robot
-        self.MEntreAxes = 1.
-        self.OEntreAxes = 1.
+
+        self.MEntreAxes = self.robot.getDistBetweenWheels()
+        self.MWheelRadius = self.robot.getWheelRadius()
+        self.OEntreAxes = self.robot.getDistBetweenWheels()
+        self.OWheelRadius = self.robot.getWheelRadius()
 
         self.lastOdomBuffer = [0.,0.]
 
-        self.xC = x
-        self.yC = y
-        self.thetaC = theta
+        self.xC = self.x
+        self.yC = self.y
+        self.thetaC = self.theta
 
         self.XErr = 0.
         self.YErr = 0.
@@ -68,8 +69,8 @@ class RobotControl(object):
   #autres methodes
     #fonctions traduisant le fonctionment du robot (modèle)
     def updateOdometry(self, dT):
-        dOR = self.robot.getWheelsAngularPos()[0] - self.lastOdomBuffer[0]
-        dOL = self.robot.getWheelsAngularPos()[1] - self.lastOdomBuffer[1]
+        dOR = (self.robot.getWheelsAngularPos()[0] - self.lastOdomBuffer[0])* self.OWheelRadius
+        dOL = (self.robot.getWheelsAngularPos()[1] - self.lastOdomBuffer[1])* self.OWheelRadius
 
         self.lastOdomBuffer[0] = self.robot.getWheelsAngularPos()[0]
         self.lastOdomBuffer[1] = self.robot.getWheelsAngularPos()[1]
@@ -89,8 +90,8 @@ class RobotControl(object):
         self.YErr = self.yC - self.y
         self.ThetaErr = self.thetaC - self.theta #unused
 
-        Kp = 1
-        Kalpha = 6
+        Kp = 1*10
+        Kalpha = 6*10
         alpha = np.arctan2(self.YErr, self.XErr)-self.theta
         if alpha <= -np.pi: alpha+= 2*np.pi
         if alpha > +np.pi: alpha-= 2*np.pi
@@ -108,28 +109,22 @@ class RobotControl(object):
         VMG = (V - Omega * self.MEntreAxes/2)/1
         self.robot.setMotorVoltages(VMD, VMG)
 
-    def draw(self):
-        shape2 = np.transpose(Transform.rotate(self.polygon, self.theta))
-        shape2 = np.transpose(Transform.translate(np.transpose(shape2), self.x*1e3, self.y*1e3))
-        plt.plot( shape2[0], shape2[1])
-        plt.plot( self.xC*1e3, self.yC*1e3 , 'bx')
-
 
     def update(self, dT):
         self.updateOdometry(dT)
         self.computeError()
         self.setConsign()
 
+    def getPosition(self):
+        return [self.x, self.y, self.theta]
+    def getCons(self):
+        return [self.xC, self.yC]
 
-
-def main():
-    # coding: utf-8
+if __name__== "__main__":
     import numpy as np
     import matplotlib.pyplot as plt
     from Terrain import Terrain as Terrain
     from Lidar import Lidar
-
-
 
     class PickConsign:
         def __init__(self, robotControl):
@@ -157,80 +152,63 @@ def main():
 ## Robot definition
     # motors
     Km = 12./(260 * 2*np.pi/60.)
-    Kb = 12./(260 * 2*np.pi/60.)
-
     La = 8.e-3
     Ra = 14.2
-
-    J  = 1.5e-3
-    c  = 5.e-0
-
-    motorR = Motor(Km, La, Ra, J, c, Kb)
-    motorL = Motor(Km, La, Ra, J, c, Kb)
+    c  = 5.e-3
 
     #frame
-    r = 1.
-    l = 1.
-    m = 0.002
-    I = 0.0025
-    robot = Robot(r, l, m, I, motorR, motorL)
+    r = 0.025
+    l = 0.150
+    m = 2
+    I = 2.08e-2
+    robot = Robot(r, l, m, I, Km, La, Ra, c)
+    robotControl = RobotControl(robot)
+    robotControl.setX(0.)
+    robotControl.setY(0.)
+    robotControl.setTheta(0.)
+    lidar = Lidar( [robot.getRobotPosition()[0], robot.getRobotPosition()[1]], robot.getRobotPosition()[2], 160, np.pi/100, terrain_lines)
 
-    robotControl = RobotControl(robot.getPosition()[0], robot.getPosition()[1], robot.getPosition()[2], robot)
-    lidar = Lidar([robot.getPosition()[0], robot.getPosition()[1]], 0, 50, np.pi/30, terrain_lines)
     pickConsign = PickConsign(robotControl)
-    robotpos = [[],[]]
-    Tmax = int(15/dT)
 
-    time = []
-    thetaR = []
-    thetaL = []
-    for t in range(Tmax):
-
-        time.append(t)
-        thetaL.append(robot.getWheelsAngularPos()[0])
-        thetaR.append(robot.getWheelsAngularPos()[1])
-
+    Tmax = 15
+    for t in range(int(Tmax/dT)):
       #computing
         robot.update(dT)
         robotControl.update(dT)
 
-        # if (t*dT)%(1.0/30.0) < 0.001:
-        #     lidar.setX(robot.getPosition()[0])
-        #     lidar.setY(robot.getPosition()[1])
-        #     lidar.setTheta(robot.getPosition()[2])
-        #     lidar.fire()
+        if (t*dT*30)%1.0 < 0.002:
+            print(robot.getRobotPosition())
+            lidar.setX(robot.getRobotPosition()[0]*1e3)
+            lidar.setY(robot.getRobotPosition()[1]*1e3)
+            lidar.setTheta(robot.getRobotPosition()[2])
+            lidar.fire()
 
-        if (t*dT)%(1.0/30.0) < 0.001:
           # Drawing
             plt.clf()
-            # plt.axis('equal')
+            # fig, axs = plt.subplots(2, 2)
+            plt.axis('equal')
             plt.text(10, 1900, "t: {0:.3f} s".format((t+1)*dT), fontsize=12)
-            plt.text(10, 1800, "X: {0:.0f} mm".format(robot.getPosition()[0]), fontsize=12)
-            plt.text(10, 1700, "Y: {0:.0f} mm".format(robot.getPosition()[1]), fontsize=12)
-            plt.text(10, 1600, "T: {0:.3f} rad".format(robot.getPosition()[2]), fontsize=12)
-            robotpos[0] = robotpos[0] + [robot.getPosition()[0]]
-            robotpos[1] = robotpos[1] + [robot.getPosition()[1]]
-            # print(robotpos)
-            plt.plot(robotpos[0], robotpos[1], 'k+')
-            # lidar.draw()
-            terrain.draw()
-            robot.draw()
-            robotControl.draw()
-            #draw trajectory
-            # plt.plot(trajectory[0], trajectory[1], 'k')
+            # plt.text(10, 1800, "X: {0:.0f} mm".format(robot.getRobotPosition()[0]*1e3), fontsize=12)
+            # plt.text(10, 1700, "Y: {0:.0f} mm".format(robot.getRobotPosition()[1]*1e3), fontsize=12)
+            # plt.text(10, 1600, "T: {0:.3f} rad".format(robot.getRobotPosition()[2]), fontsize=12)
+
+            lidar.draw()
+            ### Terrain Draw
+            for linePts in terrain_lines:
+                line = np.transpose(linePts)
+                plt.plot(line[0], line[1], 'b')
+            ### Robot draw
+            polygon = np.array([[-150, -150], [-150, 150], [150, 150], [150, -150], [-150, -150]],dtype =float)
+            shape2 = np.transpose(Transform.rotate(polygon, robot.getRobotPosition()[2]))
+            shape2 = np.transpose(Transform.translate(np.transpose(shape2), robot.getRobotPosition()[0]*1000, robot.getRobotPosition()[1]*1000))
+            plt.plot( shape2[0], shape2[1],'g')
+            ### Robot control draw
+            polygon = np.array([[-150, -150], [-150, 150], [150, 150], [150, -150], [-150, -150]],dtype =float)
+            shape2 = np.transpose(Transform.rotate(polygon, robotControl.getPosition()[2]))
+            shape2 = np.transpose(Transform.translate(np.transpose(shape2), robotControl.getPosition()[0]*1e3, robotControl.getPosition()[1]*1e3))
+            plt.plot( shape2[0], shape2[1], 'r')
+            ### Robot control Consign
+            plt.plot( robotControl.getCons()[0]*1e3, robotControl.getCons()[1]*1e3 , 'bx')
 
             plt.pause(0.01)
-
-
-
-    fig, ax2 = plt.subplots()
-    ax2.set_xlabel('time (s)')
-    ax2.set_ylabel('theta wheels (rad)')
-    ax2.plot(time, thetaR, 'r')
-    ax2.plot(time, thetaL, 'b')
     plt.show()
-
-
-
-if __name__== "__main__":
-    main()

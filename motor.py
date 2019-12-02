@@ -13,10 +13,10 @@ class Motor(object):
         B  : motor friction
     """
 
-    def __init__(self, Kt, L, R, J, B, Kv):
+    def __init__(self, Kv, L, R, J, B):
         super(Motor, self).__init__()
-        self.Kt = Kt
         self.Kv = Kv
+        self.Kt = Kv
         self.R = R
         self.L = L
         self.J  = J
@@ -25,47 +25,16 @@ class Motor(object):
         self.voltage = 0.
         self.current = 0.
         self.angularSpeed = 0.
-        self.Torque = 0.
+        self.torque = 0.
+
         self.load_T = 0.
         self.load_J = 0.
 
     def update(self, dT):
-        Kt= self.Kt
-        Kv= self.Kv
-        R= self.R
-        L= self.L
-        J=self.J
-        B=self.B
-
-        load_T = self.load_T
-        load_J = self.load_J
-        V = self.voltage
-        i = self.current
-        Omega = self.angularSpeed
-
-        E = Kv * Omega
-
-
-        i = i + (V-E-R*i)/L * dT
-        torque = i*Kt
-
-        Omega = Omega + (torque - Omega*B - load_T)/(J + load_J)*dT
-        self.current = i
-        self.Torque = torque
-        # self.angularSpeed = Omega
-
-    # mutateurs
-    def setAngularVelocity(self, angularVelocity):
-        self.angularSpeed = angularVelocity
-
-    def setVoltage(self, V):
-        self.voltage = V
-
-    def setLoad(self, load_T):
-        self.load_T = load_T
-
-    def setLoadInertia(self, load_J):
-        self.load_J = load_J
+        E = self.angularSpeed * self.Kv
+        self.current += (self.voltage-E - self.R*self.current)/self.L *dT
+        self.torque = self.current * self.Kt
+        self.angularSpeed += (self.torque - self.angularSpeed*self.B - self.load_T)/(self.J + self.load_J)*dT
 
     # asscenseurs
     def getVoltage(self):
@@ -78,7 +47,19 @@ class Motor(object):
         return self.angularSpeed
 
     def getTorque(self):
-        return self.Torque
+        return self.torque
+
+    # mutateurs
+    def setVoltage(self, V):
+        self.voltage = V
+    def setAngularVelocity(self, omega):
+        self.angularSpeed = omega
+
+    def setLoadTorque(self, torque):
+        self.load_T = torque
+
+    def setLoadInertia(self, inertia):
+        self.load_J = inertia;
 
 
 def main():
@@ -100,7 +81,6 @@ def main():
     load_torque = np.heaviside(time-0.5,1)*0
 
     Km = 12/(260 * 2*np.pi/60.)
-    Kb = 12/(260 * 2*np.pi/60.)
 
     La = 8e-3
     Ra = 14.2
@@ -111,8 +91,8 @@ def main():
     load_J = 0.000
     load_torque = np.heaviside(time-0.5,1)*0
 
-    motor = Motor(Km, La, Ra, J, c, Kb)
-    motor.setLoad(load_J)
+    motor = Motor(Km, La, Ra, J, c)
+    motor.setLoadInertia(load_J)
 
 
     Voltage = np.heaviside(time-0.5,1)*12
