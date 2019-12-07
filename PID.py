@@ -1,3 +1,4 @@
+#coding utf-8
 class PID(object):
     """docstring for PID."""
 
@@ -12,20 +13,21 @@ class PID(object):
         self.minOut = minOut
         self.maxOut = maxOut
 
-    def update(self):
-        proportional = error*Kp
-        derivate = error*Td
-        integral = (error - last_error)*Ti
-		if (integral > maxOut)
-            integral = maxOut;
-        else if (integral < minOut)
-            integral = minOut;
-        output = proportional + derivate + integral
-		if (output > maxOut)
-            output = maxOut;
-        else if (output < minOut)
-            output = minOut;
-		return output;
+    def update(self, error):
+        proportional = error*self.Kp
+        derivate = (error - self.last_error)*self.Td
+        self.integral += error*self.Ti
+        self.last_error = error
+        if self.integral > self.maxOut:
+            self.integral = self.maxOut
+        elif self.integral < self.minOut:
+            self.integral = self.minOut
+        output = proportional + derivate + self.integral
+        if output > self.maxOut:
+            output = self.maxOut
+        elif output < self.minOut:
+            output = self.minOut
+        return output
 
     def setPID(self, Kp, Ti, Td):
         self.Kp = Kp
